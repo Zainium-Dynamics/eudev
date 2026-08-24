@@ -684,13 +684,14 @@ static void event_queue_update(void) {
         int r;
 
         if (!udev_list_node_is_empty(&event_list)) {
-                r = touch("/run/udev/queue");
+                /* rest of the file already uses UDEV_ROOT_RUN for this, these two didn't */
+                r = touch(UDEV_ROOT_RUN "/udev/queue");
                 if (r < 0)
-                        log_warning_errno(r, "could not touch /run/udev/queue: %m");
+                        log_warning_errno(r, "could not touch " UDEV_ROOT_RUN "/udev/queue: %m");
         } else {
-                r = unlink("/run/udev/queue");
+                r = unlink(UDEV_ROOT_RUN "/udev/queue");
                 if (r < 0 && errno != ENOENT)
-                        log_warning("could not unlink /run/udev/queue: %m");
+                        log_warning("could not unlink " UDEV_ROOT_RUN "/udev/queue: %m");
         }
 }
 

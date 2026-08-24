@@ -738,15 +738,23 @@ int udev_event_spawn(struct udev_event *event,
                 }
         }
 
-        /* allow programs in /usr/lib/udev/ to be called without the path */
+        /* allow programs in UDEV_LIBEXEC_DIR to be called without the path */
         if (argv[0][0] != '/') {
                 strscpyl(program, sizeof(program), UDEV_LIBEXEC_DIR "/", argv[0], NULL);
+                /* zex-installed helper programs live in the writable overlay */
+                if (access(program, X_OK))
+                        strscpyl(program, sizeof(program), "/overlayer/zexlib/union/lib/udev/", argv[0], NULL);
 #ifdef HAVE_SPLIT_USR
                 if(access(program, X_OK))
                         strscpyl(program, sizeof(program), "/usr/lib/udev/", argv[0], NULL);
                 if(access(program, X_OK))
                         strscpyl(program, sizeof(program), "/lib/udev/", argv[0], NULL);
 #endif
+                /* legacy FHS fallback for off-target (non-syshub) runs */
+                if (access(program, X_OK))
+                        strscpyl(program, sizeof(program), "/usr/lib/udev/", argv[0], NULL);
+                if (access(program, X_OK))
+                        strscpyl(program, sizeof(program), "/lib/udev/", argv[0], NULL);
                 argv[0] = program;
         }
 

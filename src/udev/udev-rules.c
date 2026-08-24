@@ -53,10 +53,12 @@ static const char* const rules_dirs[] = {
         UDEV_RULES_DIR,
         UDEV_ROOT_RUN "/udev/rules.d",
         UDEV_LIBEXEC_DIR "/rules.d",
-#ifdef HAVE_SPLIT_USR
+        /* zex packages install rules here, not into syshub */
+        "/overlayer/zexlib/union/lib/udev/rules.d",
+        /* fallback for running off-target, before syshub exists */
+        "/etc/udev/rules.d",
         "/lib/udev/rules.d",
         "/usr/lib/udev/rules.d",
-#endif
         "/usr/local/lib/udev/rules.d",
         NULL};
 

@@ -603,7 +603,8 @@ static int adm_hwdb(struct udev *udev, int argc, char *argv[]) {
         int err, c;
         int rc = EXIT_SUCCESS;
 
-        _cleanup_free_ char *hwdb_bin = strdup("/etc/udev/hwdb.bin");
+        /* was hardcoded to /etc/udev/hwdb.bin before, same fix as libudev-hwdb.c */
+        _cleanup_free_ char *hwdb_bin = strdup(UDEV_HWDB_BIN);
         if (hwdb_bin == NULL) {
                 rc = EXIT_FAILURE;
                 goto out;

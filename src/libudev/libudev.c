@@ -168,7 +168,8 @@ _public_ struct udev *udev_new(void) {
 
                                 prio = util_log_priority(val);
                                 if (prio < 0)
-                                        log_debug("/etc/udev/udev.conf:%u: invalid log level '%s', ignoring.", line_nr, val);
+                                        /* this message hardcoded /etc/udev/udev.conf, wrong path already */
+                                        log_debug(UDEV_CONF_FILE ":%u: invalid log level '%s', ignoring.", line_nr, val);
                                 else
                                         log_set_max_level(prio);
                                 continue;

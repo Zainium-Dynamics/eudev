@@ -5,7 +5,9 @@ AC_CONFIG_SRCDIR([src/udev/udevd.c])
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
-AC_PREFIX_DEFAULT([/usr])
+# default prefix is now syshub instead of /usr
+# --prefix=/usr still works fine for a normal build
+AC_PREFIX_DEFAULT([/overlayer/syshub])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
@@ -142,6 +144,8 @@ AC_ARG_WITH(
 		[--with-rootrundir=DIR],
 		[Configurable path for /run])],
 	[],
+	# /run stays outside syshub, it's tmpfs at the real root same as quantra-logind
+	# uses for /run/dbus
 	[with_rootrundir=/run]
 )
 

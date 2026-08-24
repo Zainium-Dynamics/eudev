@@ -258,9 +258,12 @@ static int trie_search_f(struct udev_hwdb *hwdb, const char *search) {
 }
 
 static char *get_hwdb_bin_paths (void) {
+        /* this used to hardcode /etc/udev/hwdb.bin instead of using the
+         * configured path, kept it below as a fallback */
         static const char default_locations[] =
-          "/etc/udev/hwdb.bin\0"
-          UDEV_LIBEXEC_DIR "/hwdb.bin\0";
+          UDEV_HWDB_BIN "\0"
+          UDEV_LIBEXEC_DIR "/hwdb.bin\0"
+          "/etc/udev/hwdb.bin\0";
         const char *by_env = getenv("UDEV_HWDB_BIN");
         if (by_env != NULL) {
                 char *path = malloc(strlen(by_env) + 1
