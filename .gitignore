@@ -52,6 +52,13 @@ src/udev/keyboard-keys-from-name.h
 src/udev/keyboard-keys-to-name.h
 src/udev/keyboard-keys.txt
 
+# test run output
+test/*.log
+test/*.trs
+test/test/
+/*.tar.gz
+/*.tar.xz
+
 # built binaries
 src/ata_id/ata_id
 src/cdrom_id/cdrom_id
