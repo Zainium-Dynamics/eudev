@@ -1,0 +1,6 @@
+# Reapply keymap/font on VT console hotplug.
+#
+# systemd's equivalent restarts systemd-vconsole-setup.service; we have no
+# systemd, so this calls quantra-ctl directly, which re-runs the same
+# vconsole::setup() PID 1 already runs once at boot.
+ACTION=="add", SUBSYSTEM=="vtconsole", KERNEL=="vtcon*", RUN+="{{ROOTBINDIR}}/quantra-ctl reload-vconsole"

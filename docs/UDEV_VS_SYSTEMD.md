@@ -71,25 +71,26 @@ anything. Lower priority than uaccess, but worth knowing.
 99-systemd.rules.in       (creates systemd device units, N/A for us)
 ```
 
-### `90-vconsole.rules.in` — worth pulling in, needs a rewrite
+### `90-vconsole.rules` — done
 
-`quantra-ramfs/plymouth.rs` already reads
-`/overlayer/syshub/etc/quantra-system/vconsole.conf`, and quantra's own docs
-list `vconsole.conf` as a real config file. systemd's rule is what actually
-*triggers* vconsole re-application when a VT console device appears:
+Correction from an earlier version of this doc: `quantra-ramfs/plymouth.rs`
+does **not** read `vconsole.conf` — it only reads `rd.vconsole.keymap=` off
+`/proc/cmdline` in the initramfs, unrelated to this. The real vconsole
+logic is `quantra/src/vconsole.rs::setup()`, called once at boot from
+`quantra/src/main.rs:141`.
 
-```
-ACTION=="add", SUBSYSTEM=="vtconsole", KERNEL=="vtcon*", \
-  RUN+="{{SYSTEMCTL_BINARY_PATH}} --no-block restart systemd-vconsole-setup.service"
-```
+systemd's rule triggers reapplication on VT hotplug via
+`systemctl restart systemd-vconsole-setup.service`. We don't have
+`systemctl`, so instead:
 
-We have the config file consumer already (`plymouth.rs`) but nothing on the
-udev side that fires it on console hotplug. The fix isn't porting the rule
-as-is (`systemctl restart` means nothing here) — it's the same rule with
-`RUN+=` pointed at whatever `quantra-ctl`/`quantra` exposes for "re-run this
-one-shot service." Small, self-contained, and actually plugs a real gap
-between two things we already have. Good candidate for the next session
-that touches udev.
+- `quantra/src/control.rs` gained a `ReloadVconsole` control-socket verb
+  that just calls the same `vconsole::setup()` boot already runs.
+- `quantra-ctl reload-vconsole` sends it.
+- `rules/90-vconsole.rules.in` fires on `vtcon*` add and runs
+  `quantra-ctl reload-vconsole`, reusing the existing `{{ROOTBINDIR}}`
+  substitution (same mechanism `64-btrfs.rules.in` already uses).
+
+Implemented, not just flagged.
 
 ## `udev.conf` keys we don't support
 
@@ -113,10 +114,8 @@ ground.
   IPC bus contract with the rest of systemd, meaningless without the rest
   of systemd.
 
-## If picking one thing to do next
+## Status
 
-`90-vconsole` wiring, then `uaccess`. vconsole is small and closes a gap
-between two pieces of our own stack that already assume it's there.
-uaccess is bigger (needs a real design for how udev asks `quantra-logind`
-"who's at the seat") but it's the one actual missing feature, not just
-staleness.
+`90-vconsole` wiring — done, see above. `uaccess` — in progress, see the
+implementation plan for the ACL-granting builtin against
+`quantra-logind`'s `get_seat`/`get_session`.

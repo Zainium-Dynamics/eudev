@@ -1,10 +1,12 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 EXTRA_DIST = \
-	64-btrfs.rules.in
+	64-btrfs.rules.in \
+	90-vconsole.rules.in
 
 CLEANFILES = \
-	64-btrfs.rules
+	64-btrfs.rules \
+	90-vconsole.rules
 
 dist_udevrules_DATA = \
 	50-udev-default.rules \
@@ -29,7 +31,8 @@ dist_udevrules_DATA = \
 	70-touchpad.rules \
 	75-net-description.rules \
 	78-sound-card.rules \
-	81-net-dhcp.rules
+	81-net-dhcp.rules \
+	90-vconsole.rules
 
 if !ENABLE_RULE_GENERATOR
 dist_udevrules_DATA += \
@@ -56,6 +59,9 @@ do_subst = $(SED) \
 
 64-btrfs.rules: $(srcdir)/64-btrfs.rules.in Makefile
 	$(do_subst) $(srcdir)/64-btrfs.rules.in > 64-btrfs.rules
+
+90-vconsole.rules: $(srcdir)/90-vconsole.rules.in Makefile
+	$(do_subst) $(srcdir)/90-vconsole.rules.in > 90-vconsole.rules
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(udevconfdir)/rules.d
