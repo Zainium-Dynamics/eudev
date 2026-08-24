@@ -134,6 +134,13 @@ Both done.
   devnode, defaults to `seat0`, and skips cleanly when `quantra-logind`
   isn't reachable (verified — no live `quantra-logind` in this sandbox,
   so that's the actual code path exercised).
-  **Not implemented:** ACL revoke on logout/seat-switch — needs
-  `quantra-logind` to drive a re-scan, real follow-up work, not done
-  here.
+  **Revoke on logout/seat-switch — also done, on the `quantra-logind`
+  side** (`quantra-logind/src/uaccess.rs`): after every place
+  `Seat::active_session` can change (new session, closed session,
+  explicit activate — 4 call sites in `control.rs`), it enumerates
+  `uaccess`-tagged devices via `udevadm trigger --dry-run --tag-match=
+  uaccess` (read-only despite the name) and re-applies ACLs via
+  `setfacl` — strips the old grant, adds one for the new active uid if
+  there is one. Verified both subprocess invocations for real (`udevadm
+  trigger`/`info` against this machine's live device tree, `setfacl -m`
+  / `-b` against a scratch file) — not assumed syntax.
