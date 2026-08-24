@@ -267,6 +267,31 @@ fi
 AM_CONDITIONAL(HAVE_KMOD, [test "$have_kmod" = "yes"])
 
 # ------------------------------------------------------------------------------
+# uaccess builtin needs libacl to grant device-node ACLs to the active seat
+# user. Most distros' libacl doesn't ship a pkg-config .pc file, so try that
+# first and fall back to a plain AC_CHECK_LIB/AC_CHECK_HEADER pair.
+have_acl=no
+AC_ARG_ENABLE(uaccess, AS_HELP_STRING([--disable-uaccess], [Disable optional uaccess (ACL) support]))
+if test "x$enable_uaccess" != "xno"; then
+	PKG_CHECK_MODULES([ACL], [libacl], [have_acl=yes], [have_acl=no])
+	if test "x$have_acl" = xno; then
+		AC_CHECK_LIB([acl], [acl_set_fd],
+			[AC_CHECK_HEADER([sys/acl.h],
+				[have_acl=yes; ACL_LIBS="-lacl"],
+				[have_acl=no])],
+			[have_acl=no])
+	fi
+	if test "x$have_acl" = "xyes"; then
+		AC_DEFINE(HAVE_ACL, 1, [Define if libacl is available])
+		AC_SUBST([ACL_LIBS])
+	fi
+	if test "x$have_acl" = xno && test "x$enable_uaccess" = xyes; then
+		AC_MSG_ERROR([*** uaccess support requested but libacl not found])
+	fi
+fi
+AM_CONDITIONAL(HAVE_ACL, [test "x$have_acl" = "xyes"])
+
+# ------------------------------------------------------------------------------
 
 AC_ARG_ENABLE([hwdb], AS_HELP_STRING([--enable-hwdb],[install hwdb.d files]),[],[enable_hwdb=yes])
 AM_CONDITIONAL(ENABLE_HWDB, [test "x$enable_hwdb" = "xyes"])

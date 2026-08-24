@@ -86,6 +86,15 @@ libudev_core_la_LIBADD += \
 	$(KMOD_LIBS)
 endif
 
+if HAVE_ACL
+libudev_core_la_SOURCES += \
+	udev-builtin-uaccess.c
+libudev_core_la_CFLAGS += \
+	$(ACL_CFLAGS)
+libudev_core_la_LIBADD += \
+	$(ACL_LIBS)
+endif
+
 #
 # Extras
 #

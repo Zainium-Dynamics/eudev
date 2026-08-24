@@ -1,0 +1,112 @@
+# Tag devices that should be accessible to whoever's logged in at the
+# active seat — 90-uaccess-run.rules invokes the uaccess builtin for
+# anything tagged here, which grants the ACL via quantra-logind.
+#
+# Adapted from systemd's 70-uaccess.rules.in (device-classification rules
+# are generic, nothing systemd-specific in the matches themselves — same
+# provenance as the rest of this tree, which started as a fork of
+# systemd's udev). Dropped the meson templating: DRM render/accel/KFD
+# nodes are tagged unconditionally below (common default); /dev/kvm is
+# deliberately NOT tagged — auto-granting every seat-logged-in user
+# read/write on KVM is a real escalation surface, not something to turn
+# on silently.
+
+ACTION=="remove", GOTO="uaccess_end"
+ENV{MAJOR}=="", GOTO="uaccess_end"
+
+# PTP/MTP protocol devices, cameras, portable media players
+SUBSYSTEM=="usb", ENV{ID_USB_INTERFACES}=="*:060101:*", TAG+="uaccess"
+
+# Digicams with proprietary protocol
+ENV{ID_GPHOTO2}=="?*", TAG+="uaccess"
+
+# SCSI and USB scanners
+ENV{libsane_matched}=="yes", TAG+="uaccess"
+
+# HPLIP devices (necessary for ink level check and HP tool maintenance)
+ENV{ID_HPLIP}=="1", TAG+="uaccess"
+
+# optical drives
+SUBSYSTEM=="block", ENV{ID_CDROM}=="1", TAG+="uaccess"
+SUBSYSTEM=="scsi_generic", SUBSYSTEMS=="scsi", ATTRS{type}=="4|5", TAG+="uaccess"
+
+# Sound devices
+SUBSYSTEM=="sound", TAG+="uaccess", \
+  OPTIONS+="static_node=snd/timer", OPTIONS+="static_node=snd/seq"
+
+# Webcams, frame grabber, TV cards
+SUBSYSTEM=="video4linux", TAG+="uaccess"
+SUBSYSTEM=="dvb", TAG+="uaccess"
+SUBSYSTEM=="media", TAG+="uaccess"
+KERNEL=="udmabuf", TAG+="uaccess"
+
+# industrial cameras, some webcams, camcorders, set-top boxes, TV sets, audio devices, and more
+SUBSYSTEM=="firewire", TEST=="units", ENV{IEEE1394_UNIT_FUNCTION_MIDI}=="1", TAG+="uaccess"
+SUBSYSTEM=="firewire", TEST=="units", ENV{IEEE1394_UNIT_FUNCTION_AUDIO}=="1", TAG+="uaccess"
+SUBSYSTEM=="firewire", TEST=="units", ENV{IEEE1394_UNIT_FUNCTION_VIDEO}=="1", TAG+="uaccess"
+
+# DRI video devices
+SUBSYSTEM=="drm", KERNEL=="card*", TAG+="uaccess"
+# DRI render nodes
+SUBSYSTEM=="drm", KERNEL=="renderD*", TAG+="uaccess"
+# DRI accel nodes
+SUBSYSTEM=="accel", KERNEL=="accel*", TAG+="uaccess"
+# AMD KFD nodes
+SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess"
+
+# smart-card readers
+ENV{ID_SMARTCARD_READER}=="?*", TAG+="uaccess"
+
+# (USB) authentication devices
+ENV{ID_SECURITY_TOKEN}=="?*", TAG+="uaccess"
+
+# PDA devices
+ENV{ID_PDA}=="?*", TAG+="uaccess"
+
+# Programmable remote control
+ENV{ID_REMOTE_CONTROL}=="1", TAG+="uaccess"
+
+# joysticks
+SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="?*", TAG+="uaccess"
+
+# color measurement devices
+ENV{COLOR_MEASUREMENT_DEVICE}=="?*", TAG+="uaccess"
+
+# DDC/CI device, usually high-end monitors such as the DreamColor
+ENV{DDC_DEVICE}=="?*", TAG+="uaccess"
+
+# media player raw devices (for user-mode drivers, Android SDK, etc.)
+SUBSYSTEM=="usb", ENV{ID_MEDIA_PLAYER}=="?*", TAG+="uaccess"
+
+# software-defined radio communication devices
+ENV{ID_SOFTWARE_RADIO}=="?*", TAG+="uaccess"
+
+# 3D printers, CNC machines, laser cutters, 3D scanners, etc.
+ENV{ID_MAKER_TOOL}=="?*", TAG+="uaccess"
+
+# Protocol analyzers
+ENV{ID_SIGNAL_ANALYZER}=="?*", ENV{DEVTYPE}=="usb_device", TAG+="uaccess"
+ENV{ID_SIGNAL_ANALYZER}=="?*", KERNEL=="ttyACM[0-9]*", TAG+="uaccess"
+
+# rfkill / radio killswitches
+KERNEL=="rfkill", SUBSYSTEM=="misc", TAG+="uaccess"
+
+# AV production controllers
+SUBSYSTEM=="hidraw", ENV{ID_AV_PRODUCTION_CONTROLLER}=="1", TAG+="uaccess"
+SUBSYSTEM=="usb", ENV{ID_AV_PRODUCTION_CONTROLLER}=="1", TAG+="uaccess"
+
+# USB and Bluetooth controllable lights
+SUBSYSTEM=="hidraw", ENV{ID_AV_LIGHTS}=="1", TAG+="uaccess"
+SUBSYSTEM=="usb", ENV{ID_AV_LIGHTS}=="1", TAG+="uaccess"
+
+# Hardware wallets
+SUBSYSTEM=="usb", ENV{ID_HARDWARE_WALLET}=="1", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ENV{ID_HARDWARE_WALLET}=="1", TAG+="uaccess"
+
+# 3D mice
+SUBSYSTEM=="hidraw", ENV{ID_INPUT_3D_MOUSE}=="1", TAG+="uaccess"
+
+# Debug interfaces (e.g. Android Debug Bridge)
+ENV{ID_DEBUG_APPLIANCE}=="?*", TAG+="uaccess"
+
+LABEL="uaccess_end"

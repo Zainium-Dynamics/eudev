@@ -160,6 +160,9 @@ enum udev_builtin_cmd {
 #endif
         UDEV_BUILTIN_NET_ID,
         UDEV_BUILTIN_PATH_ID,
+#ifdef HAVE_ACL
+        UDEV_BUILTIN_UACCESS,
+#endif
         UDEV_BUILTIN_USB_ID,
         UDEV_BUILTIN_MAX
 };
@@ -184,6 +187,9 @@ extern const struct udev_builtin udev_builtin_kmod;
 #endif
 extern const struct udev_builtin udev_builtin_net_id;
 extern const struct udev_builtin udev_builtin_path_id;
+#ifdef HAVE_ACL
+extern const struct udev_builtin udev_builtin_uaccess;
+#endif
 extern const struct udev_builtin udev_builtin_usb_id;
 void udev_builtin_init(struct udev *udev);
 void udev_builtin_exit(struct udev *udev);

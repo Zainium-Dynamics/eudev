@@ -1,0 +1,6 @@
+# Trigger the uaccess builtin for anything 70-uaccess.rules tagged.
+# Not a systemd port — that project resolves this through its own
+# database/logind resync path. This is our own equivalent: run the
+# builtin inline, which asks quantra-logind who's active and grants
+# the ACL right then.
+TAG=="uaccess", RUN{builtin}+="uaccess"

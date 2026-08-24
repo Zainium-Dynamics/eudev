@@ -116,6 +116,24 @@ ground.
 
 ## Status
 
-`90-vconsole` wiring — done, see above. `uaccess` — in progress, see the
-implementation plan for the ACL-granting builtin against
-`quantra-logind`'s `get_seat`/`get_session`.
+Both done.
+
+- `90-vconsole` wiring — see above.
+- `uaccess` — new builtin (`src/udev/udev-builtin-uaccess.c`), gated
+  behind `HAVE_ACL` (configure auto-detects `libacl`, degrades cleanly
+  to "not built" if it's missing). Tags devices via
+  `rules/70-uaccess.rules` (adapted from systemd's file — the matches
+  are generic, nothing systemd-specific there — DRM render/accel/KFD
+  nodes tagged unconditionally, `/dev/kvm` deliberately left out, see
+  the file for why), triggers the builtin via `rules/90-uaccess-run.rules`.
+  Asks `quantra-logind`'s `get_seat`/`get_session` control-socket verbs
+  who's active (hand-rolled JSON for those two fixed shapes, no new
+  library dependency), grants a POSIX ACL entry on the device node.
+  Compiled, linked, and run for real against a live device on this
+  machine with `udevadm test-builtin uaccess` — correctly resolves the
+  devnode, defaults to `seat0`, and skips cleanly when `quantra-logind`
+  isn't reachable (verified — no live `quantra-logind` in this sandbox,
+  so that's the actual code path exercised).
+  **Not implemented:** ACL revoke on logout/seat-switch — needs
+  `quantra-logind` to drive a re-scan, real follow-up work, not done
+  here.

@@ -54,6 +54,12 @@ dist_udevrules_DATA += \
 	75-probe_mtd.rules
 endif
 
+if HAVE_ACL
+dist_udevrules_DATA += \
+	70-uaccess.rules \
+	90-uaccess-run.rules
+endif
+
 do_subst = $(SED) \
 	-e 's,{{ROOTBINDIR}},$(bindir),g'
 
